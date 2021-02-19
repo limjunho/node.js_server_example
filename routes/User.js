@@ -96,32 +96,37 @@ let insert_params;
  *                      type: string
  *      responses:
  *       200:
- *        description: Success
- *       403:
- *        description: Forbidden
- *       404:
- *        description: NotFound
+ *        description: User sign-up success
  *       500:
  *        description: Server Error
  */
 router.post("/sign-up", function (req, res) {
-    console.log("\nsign-up POST request");
+  console.log("\nsign-up POST request");
 
-    sql = "INSERT INTO UserInfo(Name, studentID, Password, Department, Grade, PhoneNumber, Email, Part, Status, Warning, Permission) VALUES(?,?,?,?,?,?,?,?,?,?,?)"
-    insert_params = [req.body.Name, req.body.studentID, req.body.Password, req.body.Department, req.body.Grade * 1, req.body.PhoneNumber,
-        req.body.Email, req.body.Part, req.body.Status, 0, "False"];
+  sql =
+    "INSERT INTO UserInfo(Name, studentID, Password, Department, Grade, PhoneNumber, Email, Part, Status, Warning, Permission) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+  insert_params = [
+    req.body.Name,
+    req.body.studentID,
+    req.body.Password,
+    req.body.Department,
+    req.body.Grade * 1,
+    req.body.PhoneNumber,
+    req.body.Email,
+    req.body.Part,
+    req.body.Status,
+    0,
+    "False",
+  ];
 
-    connection.query(sql, insert_params, function (err, rows, fields) {
-        if (err) {
-            console.log(err);
-            res.status(500).send("Failed");
-        } else {
-            res.status(200).send("Success");
-
-        }
-        console.log(rows);
-        res.send(rows);
-    });
+  connection.query(sql, insert_params, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("User sign-up success");
+    } else {
+      res.status(200).send("Success");
+    }
+  });
 });
 
 /**
@@ -143,27 +148,27 @@ router.post("/sign-up", function (req, res) {
  *        description: Server Error
  */
 router.get("/dupcheck", function (req, res) {
-    let Name = req.query.name;
+  let Name = req.query.name;
 
-    console.log("\nID duplicate check GET request");
+  console.log("\nID duplicate check GET request");
 
-    sql = "SELECT Name FROM UserInfo WHERE Name=?";
-    insert_params = [Name];
-    connection.query(sql, insert_params, function (err, rows, fields) {
-        if (err) {
-            console.log(err);
-            res.status(500).send("Server Error");
-        } else {
-            if(rows[0] == null){
-                console.log('ID Non-Duplicate');
-                res.status(200).send("ID Non-Duplicate");
-            }else{
-                console.log("ID Duplicate");
-                console.log(rows);
-                res.status(200).send("ID Duplicate");
-            }
-        }
-    });
+  sql = "SELECT Name FROM UserInfo WHERE Name=?";
+  insert_params = [Name];
+  connection.query(sql, insert_params, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else {
+      if (rows[0] == null) {
+        console.log("ID Non-Duplicate");
+        res.status(200).send("ID Non-Duplicate");
+      } else {
+        console.log("ID Duplicate");
+        console.log(rows);
+        res.status(200).send("ID Duplicate");
+      }
+    }
+  });
 });
 
 /**
@@ -193,31 +198,31 @@ router.get("/dupcheck", function (req, res) {
  *        description: Server Error
  */
 router.post("/sign-in", function (req, res) {
-    let id = req.body.studentID;
-    let pwd = req.body.Password;
+  let id = req.body.studentID;
+  let pwd = req.body.Password;
 
-    console.log("\nLogin POST request");
+  console.log("\nLogin POST request");
 
-    sql = "SELECT studentID, Password FROM UserInfo WHERE studentID=? AND Password=?";
-    insert_params = [id, pwd];
-    connection.query(sql, insert_params, function (err, rows, fields) {
-        if (err) {
-            console.log(err);
-            res.status(500).send("Server Error");
-        } else {
-            if (rows[0] == null) {
-                // login failed
-                console.log("Sign-in Failed");
-                console.log(rows);
-                res.status(200).send("Sign_in Failed");
-            } else if (rows[0].studentID == id && rows[0].Password == pwd) {
-                // login success
-                console.log("Sign-in Success");
-                res.status(200).send("Sign-in Success");
-            }
-
-        }
-    });
+  sql =
+    "SELECT studentID, Password FROM UserInfo WHERE studentID=? AND Password=?";
+  insert_params = [id, pwd];
+  connection.query(sql, insert_params, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else {
+      if (rows[0] == null) {
+        // login failed
+        console.log("Sign-in Failed");
+        console.log(rows);
+        res.status(200).send("Sign_in Failed");
+      } else if (rows[0].studentID == id && rows[0].Password == pwd) {
+        // login success
+        console.log("Sign-in Success");
+        res.status(200).send("Sign-in Success");
+      }
+    }
+  });
 });
 
 /**
@@ -251,32 +256,32 @@ router.post("/sign-in", function (req, res) {
  *        description: Server Error
  */
 router.post("/password", function (req, res) {
-    let id = req.body.studentID;
-    let name = req.body.Name;
-    let phoneNumber = req.body.PhoneNumber;
-    let email = req.body.Email;
+  let id = req.body.studentID;
+  let name = req.body.Name;
+  let phoneNumber = req.body.PhoneNumber;
+  let email = req.body.Email;
 
-    console.log("\nPassword finding POST request");
+  console.log("\nPassword finding POST request");
 
-    sql = "SELECT Password FROM UserInfo WHERE studentID=? AND name=? AND PhoneNumber=? AND email=?";
-    insert_params = [id, name, phoneNumber, email];
-    connection.query(sql, insert_params, function (err, rows, fields) {
-        if (err) {
-            console.log(err);
-            res.status(500).send("Server Error");
-        } else {
-            if (rows[0] == null) {
-                // Failed to find password
-                console.log("Failed to find password");
-                res.status(200).send("Failed to find password");
-            } else {
-                // Success to find password
-                console.log("Success to find password");
-                res.status(200).send(rows[0].Password);
-            }
-
-        }
-    });
+  sql =
+    "SELECT Password FROM UserInfo WHERE studentID=? AND name=? AND PhoneNumber=? AND email=?";
+  insert_params = [id, name, phoneNumber, email];
+  connection.query(sql, insert_params, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else {
+      if (rows[0] == null) {
+        // Failed to find password
+        console.log("Failed to find password");
+        res.status(200).send("Failed to find password");
+      } else {
+        // Success to find password
+        console.log("Success to find password");
+        res.status(200).send(rows[0].Password);
+      }
+    }
+  });
 });
 
 /**
@@ -292,7 +297,7 @@ router.post("/password", function (req, res) {
  *          name: "body"
  *          description: "ID, 기존 Password, 변경할 Password입력"
  *          required: true
- * 
+ *
  *          schema:
  *              type: object
  *              properties:
@@ -309,38 +314,41 @@ router.post("/password", function (req, res) {
  *        description: Server Error
  */
 router.put("/password", function (req, res) {
-    let id = req.body.studentID;
-    let currentPwd = req.body.currentPwd;
-    let changePwd = req.body.changePwd;
+  let id = req.body.studentID;
+  let currentPwd = req.body.currentPwd;
+  let changePwd = req.body.changePwd;
 
-    console.log("\nPassword changing PUT request");
+  console.log("\nPassword changing PUT request");
 
-    sql = "SELECT Password FROM UserInfo WHERE studentID=?";
-    insert_params = [id];
-    connection.query(sql, insert_params, function (err, rows, fields) {
+  sql = "SELECT Password FROM UserInfo WHERE studentID=?";
+  insert_params = [id];
+  connection.query(sql, insert_params, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else if (
+      rows[0] == null ||
+      rows[0].Password == changePwd ||
+      rows[0].Password != currentPwd
+    ) {
+      console.log("Password change Failed");
+      res.status(200).send("Password change Failed");
+    } else {
+      sql = "UPDATE UserInfo SET Password=? WHERE studentID=?";
+      insert_params = [changePwd, id];
+      connection.query(sql, insert_params, function (err, rows, fields) {
         if (err) {
-            console.log(err);
-            res.status(500).send("Server Error");
-        } else if (rows[0] == null || rows[0].Password == changePwd || rows[0].Password != currentPwd) {
-            console.log("Password change Failed");
-            res.status(200).send("Password change Failed");
-        }else{
-            sql = "UPDATE UserInfo SET Password=?";
-            insert_params = [changePwd];
-            connection.query(sql, insert_params, function (err, rows, fields) {
-                if (err) {
-                    console.log(err);
-                    res.status(500).send("Server Error");
-                } else {
-                    // Success to changing password
-                    console.log("Password change Success");
-                    res.status(200).send("Password change Success");
-                }
-            });
+          console.log(err);
+          res.status(500).send("Server Error");
+        } else {
+          // Success to changing password
+          console.log("Password change Success");
+          res.status(200).send("Password change Success");
         }
-    });
+      });
+    }
+  });
 });
-
 
 /**
  * @swagger
@@ -352,7 +360,7 @@ router.put("/password", function (req, res) {
  *      - application/json
  *      responses:
  *       200:
- *        description: Success
+ *        description: Empty or Data
  *        schema:
  *            type: object
  *            properties:
@@ -379,26 +387,26 @@ router.put("/password", function (req, res) {
  *                            type: number
  *                        Permission:
  *                            type: string
- *       403:
- *        description: Forbidden
- *       404:
- *        description: NotFound
  *       500:
  *        description: Server Error
  */
 router.get("/info", function (req, res) {
-    console.log("\nUser data GET request");
+  console.log("\nUser data GET request");
 
-    sql = "SELECT Name, studentID, Department, Grade, PhoneNumber, Email, Part, Status, Warning, Permission FROM UserInfo";
-    connection.query(sql, function (err, rows, fields) {
-        if (err) {
-            console.log(err);
-            res.status(500).send("Failed");
-        } else {
-            console.log("Success to return user infomation");
-            res.status(200).send(rows);
-        }
-    });
+  sql =
+    "SELECT Name, studentID, Department, Grade, PhoneNumber, Email, Part, Status, Warning, Permission FROM UserInfo";
+  connection.query(sql, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else if (rows[0] == null) {
+      console.log("Empty");
+      res.status(200).send("Empty");
+    } else {
+      console.log("User infomation inquiry success");
+      res.status(200).send(rows);
+    }
+  });
 });
 
 /**
@@ -434,34 +442,45 @@ router.get("/info", function (req, res) {
  *      responses:
  *       200:
  *        description: Infomation change success
- *       403:
- *        description: Forbidden
  *       404:
  *        description: NotFound
  *       500:
  *        description: Server Error
  */
 router.put("/info", function (req, res) {
-    console.log("\nUser infomation update PUT request");
+  console.log("\nUser infomation update PUT request");
 
-    let id = req.body.studentID;
-    let department = req.body.Department;
-    let grade = req.body.Grade;
-    let phonenumber = req.body.PhoneNumber;
-    let email = req.body.Email;
-    let status = req.body.Status;
+  let id = req.body.studentID;
+  let department = req.body.Department;
+  let grade = req.body.Grade;
+  let phonenumber = req.body.PhoneNumber;
+  let email = req.body.Email;
+  let status = req.body.Status;
 
-    sql = "UPDATE UserInfo SET Department=?, Grade=?, PhoneNumber=?, Email=?, Status=? WHERE studentID=?";
-    insert_params = [department, grade, phonenumber, email, status, id];
-    connection.query(sql, insert_params, function (err, rows, fields) {
+  sql = "SELECT studentID FROM UserInfo WHERE studentID=?";
+  insert_params = [id];
+  connection.query(sql, insert_params, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else if (rows[0] == null) {
+      // 수정할 User가 없는 경우
+      res.status(404).send("NotFound");
+    } else {
+      sql =
+        "UPDATE UserInfo SET Department=?, Grade=?, PhoneNumber=?, Email=?, Status=? WHERE studentID=?";
+      insert_params = [department, grade, phonenumber, email, status, id];
+      connection.query(sql, insert_params, function (err, rows, fields) {
         if (err) {
-            console.log(err);
-            res.status(500).send("Server Error");
+          console.log(err);
+          res.status(500).send("Server Error");
         } else {
-            console.log("Infomation change success");
-            res.status(200).send("Infomation change success");
+          console.log("Infomation change success");
+          res.status(200).send("Infomation change success");
         }
-    });
+      });
+    }
+  });
 });
 
 /**
@@ -484,26 +503,40 @@ router.put("/info", function (req, res) {
  *      responses:
  *       200:
  *        description: User delete (success or failed)
+ *       404:
+ *        description: NotFound
  *       500:
  *        description: Server Error
  */
 router.delete("/info", function (req, res) {
-    let id = req.query.studentID;
-    let pwd = req.query.Password;
+  let id = req.query.studentID;
+  let pwd = req.query.Password;
+  insert_params = [id, pwd];
 
-    console.log("\nUser unsubscribe DELETE request");
+  console.log("\nUser unsubscribe DELETE request");
 
-    sql = "DELETE FROM UserInfo WHERE studentID=? AND Password=?";
-    insert_params = [id, pwd];
-    connection.query(sql, insert_params, function (err, rows, fields) {
+  sql =
+    "SELECT studentID, Password FROM UserInfo WHERE studentID=? AND Password=?";
+  connection.query(sql, insert_params, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else if (rows[0] == null) {
+      // 삭제할 User가 없는 경우
+      res.status(404).send("NotFound");
+    } else {
+      sql = "DELETE FROM UserInfo WHERE studentID=? AND Password=?";
+      connection.query(sql, insert_params, function (err, rows, fields) {
         if (err) {
-            console.log(err);
-            res.status(500).send("Server Error");
+          console.log(err);
+          res.status(500).send("Server Error");
         } else {
-            console.log("User delete success");
-            res.status(200).send("User delete success");
+          console.log("User delete success");
+          res.status(200).send("User delete success");
         }
-    });
+      });
+    }
+  });
 });
 
 // user Router Start

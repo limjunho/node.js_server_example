@@ -55,7 +55,7 @@ let insert_params;
  *      parameters:
  *        - in: "body"
  *          name: "body"
- *          description: "일정 작성"
+ *          description: "제목, 시작시간, 종료시간, 장소, 이름, 내용 입력"
  *          required: true
  *          schema:
  *              type: object
@@ -77,26 +77,33 @@ let insert_params;
  *      responses:
  *       200:
  *        description: Success
- *       404:
- *        description: NotFound
  *       500:
  *        description: Server Error
  */
 router.post("/table", function (req, res) {
-    console.log("\ncreate to calendar POST request");
+  console.log("\ncreate to calendar POST request");
 
-    sql = "INSERT INTO Calendar(Idx, Header, startTime, endTime, Place, Name, Body) VALUES(?,?,?,?,?,?,?)"
-    insert_params = [, req.body.Header, req.body.startTime, req.body.endTime, req.body.Place, req.body.Name, req.body.Body];
+  sql =
+    "INSERT INTO Calendar(Idx, Header, startTime, endTime, Place, Name, Body) VALUES(?,?,?,?,?,?,?)";
+  insert_params = [
+    ,
+    req.body.Header,
+    req.body.startTime,
+    req.body.endTime,
+    req.body.Place,
+    req.body.Name,
+    req.body.Body,
+  ];
 
-    connection.query(sql, insert_params, function (err, rows, fields) {
-        if (err) {
-            console.log(err);
-            res.status(500).send("Server Error");
-        } else {
-            console.log("Create calendar Success");
-            res.status(200).send("Create calendar Success");
-        }
-    });
+  connection.query(sql, insert_params, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else {
+      console.log("Calendar create success");
+      res.status(200).send("Calendar create success");
+    }
+  });
 });
 
 /**
@@ -109,7 +116,7 @@ router.post("/table", function (req, res) {
  *      - application/json
  *      responses:
  *       200:
- *        description: Success
+ *        description: Empty or Data
  *        schema:
  *            type: object
  *            properties:
@@ -130,31 +137,27 @@ router.post("/table", function (req, res) {
  *                            type: string
  *                        Body:
  *                            type: string
- *       403:
- *        description: Forbidden
- *       404:
- *        description: NotFound
  *       500:
  *        description: Server Error
  */
 router.get("/table", function (req, res) {
-    console.log("\nselect to calendar GET request");
+  console.log("\nselect to calendar GET request");
 
-    sql = "SELECT * FROM Calendar";
-    connection.query(sql, function (err, rows, fields) {
-        if (err) {
-            console.log(err);
-            res.status(500).send("Server Error");
-        } else {
-            if (rows[0] == null) {
-                console.log("Empty set error");
-                res.status(200).send("Empty set Error");
-            } else {
-                console.log("Calendar inquiry success");
-                res.status(200).send(rows);
-            }
-        }
-    });
+  sql = "SELECT * FROM Calendar";
+  connection.query(sql, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else {
+      if (rows[0] == null) {
+        console.log("Empty");
+        res.status(200).send("Empty");
+      } else {
+        console.log("Calendar inquiry success");
+        res.status(200).send(rows);
+      }
+    }
+  });
 });
 
 /**
@@ -191,36 +194,48 @@ router.get("/table", function (req, res) {
  *                      type: string
  *      responses:
  *       200:
- *        description: Calendar update (success or failed)
- *       403:
- *        description: Forbidden
+ *        description: Calendar update success
  *       404:
  *        description: NotFound
  *       500:
  *        description: Server Error
  */
 router.put("/table", function (req, res) {
-    var idx = req.body.Idx;
-    var header = req.body.Header;
-    var startTime = req.body.startTime;
-    var endTime = req.body.endTime;
-    var place = req.body.Place;
-    var name = req.body.Name;
-    var body = req.body.Body;
+  var idx = req.body.Idx;
+  var header = req.body.Header;
+  var startTime = req.body.startTime;
+  var endTime = req.body.endTime;
+  var place = req.body.Place;
+  var name = req.body.Name;
+  var body = req.body.Body;
 
-    console.log("\nCalendar schedule update PUT request");
+  console.log("\nCalendar schedule update PUT request");
 
-    sql = "UPDATE Calendar SET Header=?, startTime=?, endTime=?, Place=?, Name=?, Body=? WHERE Idx =?"
-    insert_params = [header, startTime, endTime, place, name, body, idx];
-    connection.query(sql, insert_params, function (err, rows, fields) {
+  sql = "SELECT Idx FROM calendar WHERE Idx=?";
+  insert_params = [idx];
+  connection.query(sql, insert_params, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else if (rows[0] == undefined) {
+      // 수정할 일정이 없는 경우
+      console.log("NotFound");
+      res.status(404).send("NotFound");
+    } else {
+      sql =
+        "UPDATE Calendar SET Header=?, startTime=?, endTime=?, Place=?, Name=?, Body=? WHERE Idx =?";
+      insert_params = [header, startTime, endTime, place, name, body, idx];
+      connection.query(sql, insert_params, function (err, rows, fields) {
         if (err) {
-            console.log(err);
-            res.status(500).send("Server Error");
+          console.log(err);
+          res.status(500).send("Server Error");
         } else {
-            console.log("Calendar update success");
-            res.status(200).send("Calendar update success");
+          console.log("Calendar update success");
+          res.status(200).send("Calendar update success");
         }
-    });
+      });
+    }
+  });
 });
 
 /**
@@ -239,25 +254,38 @@ router.put("/table", function (req, res) {
  *      responses:
  *       200:
  *        description: Schedule delete (success or failed)
+ *       404:
+ *        description: NotFound
  *       500:
  *        description: Server Error
  */
 router.delete("/table", function (req, res) {
-    console.log("\nCalendar schedule DELETE request");
+  console.log("\nCalendar schedule DELETE request");
 
-    let idx = req.query.Idx;
+  let idx = req.query.Idx;
+  insert_params = [idx];
 
-    sql = "DELETE FROM Calendar WHERE Idx=?";
-    insert_params = [idx];
-    connection.query(sql, insert_params, function (err, rows, fields) {
+  sql = "SELECT Idx FROM Calendar WHERE Idx=?";
+  connection.query(sql, insert_params, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else if (rows[0] == null) {
+      console.log("NotFound");
+      res.status(404).send("NotFound");
+    } else {
+      sql = "DELETE FROM Calendar WHERE Idx=?";
+      connection.query(sql, insert_params, function (err, rows, fields) {
         if (err) {
-            console.log(err);
-            res.status(500).send("Server Error");
+          console.log(err);
+          res.status(500).send("Server Error");
         } else {
-            console.log("Schedule delete success");
-            res.status(200).send("Schedule delete success");
+          console.log("Schedule delete success");
+          res.status(200).send("Schedule delete success");
         }
-    });
+      });
+    }
+  });
 });
 
 // calendar Router Start

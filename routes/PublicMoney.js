@@ -75,27 +75,34 @@ let insert_params;
  *                      type: number
  *      responses:
  *       200:
- *        description: Contents create (success or failed)
- *       404:
- *        description: NotFound
+ *        description: Contents create success
  *       500:
  *        description: Server Error
  */
 router.post("/table", function (req, res) {
-    console.log("\nCreate public money contents POST request");
+  console.log("\nCreate public money contents POST request");
 
-    sql = "INSERT INTO PublicMoney(Idx, Time, Name, Deposit, Withdraw, Contents, Balance) VALUES(?,?,?,?,?,?,?)"
-    insert_params = [, req.body.Time, req.body.Name, req.body.Deposit, req.body.Withdraw, req.body.Contents, req.body.Balance];
+  sql =
+    "INSERT INTO PublicMoney(Idx, Time, Name, Deposit, Withdraw, Contents, Balance) VALUES(?,?,?,?,?,?,?)";
+  insert_params = [
+    ,
+    req.body.Time,
+    req.body.Name,
+    req.body.Deposit,
+    req.body.Withdraw,
+    req.body.Contents,
+    req.body.Balance,
+  ];
 
-    connection.query(sql, insert_params, function (err, rows, fields) {
-        if (err) {
-            console.log(err);
-            res.status(500).send("Server Error");
-        } else {
-            console.log("Contents create success");
-            res.status(200).send("Contents create success");
-        }
-    });
+  connection.query(sql, insert_params, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else {
+      console.log("Contents create success");
+      res.status(200).send("Contents create success");
+    }
+  });
 });
 
 /**
@@ -108,7 +115,7 @@ router.post("/table", function (req, res) {
  *      - application/json
  *      responses:
  *       200:
- *        description: Success
+ *        description: Empty or Data
  *        schema:
  *            type: object
  *            properties:
@@ -128,26 +135,27 @@ router.post("/table", function (req, res) {
  *                            type: string
  *                        Balance:
  *                            type: number
- *       403:
- *        description: Forbidden
  *       404:
  *        description: NotFound
  *       500:
  *        description: Server Error
  */
 router.get("/table", function (req, res) {
-    console.log("\nSelect public money list GET request");
+  console.log("\nSelect public money list GET request");
 
-    sql = "SELECT * FROM PublicMoney";
-    connection.query(sql, function (err, rows, fields) {
-        if (err) {
-            console.log(err);
-            res.status(500).send("Failed");
-        } else {
-            console.log("PublicMoney inquiry success");
-            res.status(200).send(rows);
-        }
-    });
+  sql = "SELECT * FROM PublicMoney";
+  connection.query(sql, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else if (rows[0] == null) {
+      console.log("Empty");
+      res.status(200).send("Empty");
+    } else {
+      console.log("PublicMoney inquiry success");
+      res.status(200).send(rows);
+    }
+  });
 });
 
 /**
@@ -183,37 +191,47 @@ router.get("/table", function (req, res) {
  *                      type: number
  *      responses:
  *       200:
- *        description: PublicMoney update (success or failed)
- *       403:
- *        description: Forbidden
+ *        description: PublicMoney update success
  *       404:
  *        description: NotFound
  *       500:
  *        description: Server Error
  */
 router.put("/table", function (req, res) {
-    console.log("\nPUT");
+  console.log("\nPUT");
 
-    var idx = req.body.Idx;
-    var time = req.body.Time;
-    var name = req.body.Name;
-    var deposit = req.body.Deposit;
-    var withdraw = req.body.Withdraw;
-    var contents = req.body.Contents;
-    var balance = req.body.Balance;
+  let idx = req.body.Idx;
+  let time = req.body.Time;
+  let name = req.body.Name;
+  let deposit = req.body.Deposit;
+  let withdraw = req.body.Withdraw;
+  let contents = req.body.Contents;
+  let balance = req.body.Balance;
 
-    sql = "UPDATE PublicMoney SET Time=?, Name=?, Deposit=?, Withdraw=?, Contents=?, Balance=? WHERE Idx=?";
-    insert_params = [time, name, deposit, withdraw, contents, balance, idx];
-    console.log(time, name, deposit, withdraw, contents, balance, idx);
-    connection.query(sql, insert_params, function (err, rows, fields) {
+  sql = "SELECT Idx FROM PublicMoney WHERE Idx=?";
+  insert_params = [idx];
+  connection.query(sql, insert_params, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else if (rows[0] == null) {
+      console.log("NotFound");
+      res.status(404).send("NotFound");
+    } else {
+      sql =
+        "UPDATE PublicMoney SET Time=?, Name=?, Deposit=?, Withdraw=?, Contents=?, Balance=? WHERE Idx=?";
+      insert_params = [time, name, deposit, withdraw, contents, balance, idx];
+      connection.query(sql, insert_params, function (err, rows, fields) {
         if (err) {
-            console.log(err);
-            res.status(500).send("Server Error");
-        }else{
-            console.log("PublicMoney update Success");
-            res.status(200).send("PublicMoney update Success");
+          console.log(err);
+          res.status(500).send("Server Error");
+        } else {
+          console.log("PublicMoney update Success");
+          res.status(200).send("PublicMoney update Success");
         }
-    });
+      });
+    }
+  });
 });
 
 /**
@@ -232,25 +250,38 @@ router.put("/table", function (req, res) {
  *      responses:
  *       200:
  *        description: PublicMoney delete (success or failed)
+ *       404:
+ *        description: NotFound
  *       500:
  *        description: Server Error
  */
 router.delete("/table", function (req, res) {
-    console.log("\nDELETE");
+  console.log("\nDELETE");
 
-    var idx = req.query.Idx;
+  let idx = req.query.Idx;
+  insert_params = [idx];
 
-    sql = "DELETE FROM PublicMoney WHERE Idx=?";
-    insert_params = [idx];
-    connection.query(sql, insert_params, function (err, rows, fields) {
+  sql = "SELECT Idx FROM PublicMoney WHERE Idx=?";
+  connection.query(sql, insert_params, function (err, rows, fields) {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Server Error");
+    } else if (rows[0] == null) {
+      console.log("NotFound");
+      res.status(404).send("NotFound");
+    } else {
+      sql = "DELETE FROM PublicMoney WHERE Idx=?";
+      connection.query(sql, insert_params, function (err, rows, fields) {
         if (err) {
-            console.log(err);
-            res.status(500).send("Server Error");
+          console.log(err);
+          res.status(500).send("Server Error");
         } else {
-            console.log("PublicMoney delete success");
-            res.status(200).send("PublicMoney delete success");
+          console.log("PublicMoney delete success");
+          res.status(200).send("PublicMoney delete success");
         }
-    });
+      });
+    }
+  });
 });
 
 // publicmoney Router Start
